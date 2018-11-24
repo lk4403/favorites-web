@@ -26,13 +26,13 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-import sun.misc.BASE64Decoder;
 
 import javax.annotation.Resource;
 import javax.mail.internet.MimeMessage;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import java.sql.Timestamp;
+import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
 
@@ -141,7 +141,7 @@ public class UserController extends BaseController {
 	public List<Favorites> getFavorites() {
 		List<Favorites> favorites = null;
 		try {
-			favorites = favoritesRepository.findByUserId(getUserId());
+			favorites = favoritesRepository.findByUserIdOrderByLastModifyTimeDesc(getUserId());
 		} catch (Exception e) {
 			// TODO: handle exception
 			logger.error("getFavorites failed, ", e);
@@ -355,9 +355,9 @@ public class UserController extends BaseController {
 	        String header ="data:image";
 	        String[] imageArr=image.split(",");  
 	        if(imageArr[0].contains(header)){  
-		        image=imageArr[1]; 
-		        BASE64Decoder decoder = new BASE64Decoder();
-                byte[] decodedBytes = decoder.decodeBuffer(image);  
+		        image=imageArr[1];
+				Base64.Decoder decoder = Base64.getDecoder();
+                byte[] decodedBytes = decoder.decode(image);
                 FileUtil.uploadFile(decodedBytes, filePath, fileName);
                 User user = getUser();
     			userRepository.setProfilePicture(savePath, user.getId());
@@ -390,8 +390,8 @@ public class UserController extends BaseController {
 			String[] imageArr=image.split(",");
 			if(imageArr[0].contains(header)){
 				image=imageArr[1];
-				BASE64Decoder decoder = new BASE64Decoder();
-				byte[] decodedBytes = decoder.decodeBuffer(image);
+				Base64.Decoder decoder = Base64.getDecoder();
+				byte[] decodedBytes = decoder.decode(image);
 				FileUtil.uploadFile(decodedBytes, filePath, fileName);
 				User user = getUser();
 				userRepository.setBackgroundPicture(savePath, user.getId());
